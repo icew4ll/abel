@@ -1,0 +1,14 @@
+[package]
+name = "abel"
+version = "0.1.0"
+authors = ["icew4ll <icew4ll@tuta.io>"]
+
+[dependencies]
+envconfig = "0.3.0"
+envconfig_derive = "0.3.0"
+structopt = "0.2.10"
+serde_derive = "1.0.79"
+csv = "1.0.1"
+duct = "0.11.0"
+serde = "1.0.79"
+chrono = "0.4.6"
