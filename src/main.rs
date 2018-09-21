@@ -47,7 +47,7 @@ struct Opt {
 // subcommand parsing
 #[derive(Debug, StructOpt)]
 enum Command {
-    Audit { ips: Vec<String> },
+    Push { alias: Option<String> },
     Mvq { ips: String },
     Rex { test: String },
 }
@@ -83,8 +83,8 @@ fn main() {
     // }}}
     // match subcommands {{{
     match opt.cmd {
-        Some(Command::Audit { ips }) => {
-            println!("{:?}", ips);
+        Some(Command::Push { alias }) => {
+            println!("{:?}", alias);
         }
         Some(Command::Mvq { ips }) => {
             println!("{:?}", ips);
