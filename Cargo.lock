@@ -7,6 +7,7 @@ dependencies = [
  "duct 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "envconfig 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "envconfig_derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "failure 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.79 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
