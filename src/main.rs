@@ -12,7 +12,6 @@ extern crate serde_derive;
 extern crate chrono;
 extern crate csv;
 // use chrono::prelude::*;
-// use duct::cmd;
 use envconfig::Envconfig;
 use failure::Error;
 // use glob::glob;
@@ -31,6 +30,8 @@ use structopt::StructOpt;
 struct Config {
     #[envconfig(from = "HOME")]
     home: String,
+    #[envconfig(from = "EDITOR")]
+    editor: String,
 }
 #[derive(Debug, Deserialize)]
 struct Csv {
@@ -60,45 +61,49 @@ fn main() {
     let opt = Opt::from_args();
     let mut csv = vec![];
     let mut files = vec![];
-    // read csv {{{
     // Initialize config from environment variables
     let config = Config::init().unwrap_or_else(|err| {
         eprintln!("{}", err);
         process::exit(1);
     });
+    // read csv
     if let Err(err) = read(&config.home, &mut csv) {
-        println!("error running example: {}", err);
+        println!("Error reading CSV: {}", err);
         process::exit(1);
     }
+    // read paths
     if let Err(err) = paths(&config.home, &mut files) {
-        println!("Error gettings paths {}", err);
+        println!("Error getting paths {}", err);
         process::exit(1);
     }
     // filter directories
+    let replacestring = format!("{}/m/vim/", &config.home);
     let items = files
         .iter()
-        .map(|x| x.replace("/home/fish/m/vim/", ""))
+        .map(|x| x.replace(&replacestring, ""))
         .collect::<Vec<_>>();
     // check for arg0
     if let Some(arg0) = opt.file {
-        println!("{}", arg0);
+        // check arg0 matches files found in directory
         let target = items
             .into_iter()
             .filter(|i| i.to_string() == arg0)
             .collect::<Vec<_>>();
-        println!("match {}", target.get(0).expect("Match not found"));
+        // error handling whether match was found
+        let isfound = match target.get(0) {
+            Some(i) => i,
+            None => &arg0,
+        };
+        if let Err(err) = openfile(&config.home, &config.editor, isfound) {
+            println!("Error opening file: {}", err);
+            process::exit(1);
+        }
     }
-    // &items.iter().filter(|x| println!("{:?}", x);
-    // println!("{:?}", &items;
-    //
-// mailq.iter().map(|x| &x.1).for_each(|x| println!("{:?}", x));
-// let q = mailq.iter().map(|x| &x.1).collect::<Vec<_>>();
     //}}}
 }
 // }}}
 // read file {{{
 fn read(home: &str, csv: &mut Vec<((String, String))>) -> Result<(), Error> {
-    // println!("{}", home);
     let path = format!("{}{}", home, "/m/abel/list");
     let file = fs::File::open(path)?;
     let mut rdr = csv::ReaderBuilder::new().flexible(true).from_reader(file);
@@ -109,14 +114,23 @@ fn read(home: &str, csv: &mut Vec<((String, String))>) -> Result<(), Error> {
     Ok(())
 }
 // }}}
-// paths
+// paths {{{
 fn paths(home: &str, files: &mut Vec<String>) -> Result<(), Error> {
     let dir = format!("{}{}", home, "/m/vim");
     let paths = fs::read_dir(dir)?;
     for path in paths {
-        // println!("{}", path?.path().display())
         files.push(path?.path().to_str().unwrap().to_string());
     }
+    Ok(())
+}
+// }}}
+// openFile {{{
+fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
+    let location = format!("{}{}/{}", home, "/m/vim", file);
+    let cmd = format!("{} {}", editor, location);
+    println!("{:?}", &cmd);
+    let args = &["-c", &cmd];
+    duct::cmd("bash", args).run()?;
     Ok(())
 }
 // }}}
