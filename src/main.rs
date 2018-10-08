@@ -43,17 +43,15 @@ struct Csv {
 struct Opt {
     file: Option<String>,
     #[structopt(subcommand)]
-    cmd: Option<Command>,
+    sub: Option<Sub>,
 }
 // subcommand parsing
 #[derive(Debug, StructOpt)]
-enum Command {
-    Push { file: Option<String> },
+enum Sub {
+    Push { repo: String },
     Mvq { ips: String },
     Rex { test: String },
 }
-// initialize error
-
 // }}}
 // main {{{
 fn main() {
@@ -61,7 +59,7 @@ fn main() {
     let opt = Opt::from_args();
     let mut csv = vec![];
     let mut files = vec![];
-    // Initialize config from environment variables
+    // Get environment variables
     let config = Config::init().unwrap_or_else(|err| {
         eprintln!("{}", err);
         process::exit(1);
@@ -76,7 +74,7 @@ fn main() {
         println!("Error getting paths {}", err);
         process::exit(1);
     }
-    // filter directories
+    // filter files from paths
     let replacestring = format!("{}/m/vim/", &config.home);
     let items = files
         .iter()
@@ -99,7 +97,16 @@ fn main() {
             process::exit(1);
         }
     }
-    //}}}
+    // check subcommands
+    match opt.sub {
+        Some(Sub::Push { repo }) => {
+            // if let Err(err) = audit(ips) {
+            //     println!("{}", err);
+            //     process::exit(1);
+            // }
+        }
+        _ => (),
+    }
 }
 // }}}
 // read file {{{
