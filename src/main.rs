@@ -146,6 +146,8 @@ fn push(home: &str, dir: &str) -> Result<(), Error> {
     let location = format!("{}/m/{}", home, dir);
     let cmd = vec_of_strings![
         format!("cd {}", location),
+        // sed -i 's/https:\/\/github.com\//git@github.com:/' .git/config
+        "sed -i 's/https:\\/\\/github.com\\//git@github.com:/' .git/config",
         "git add -A",
         "git commit -m 'test'",
         "git push"
