@@ -5,7 +5,7 @@ extern crate failure;
 extern crate envconfig_derive;
 extern crate duct;
 extern crate envconfig;
-#[macro_use]
+// #[macro_use]
 extern crate structopt;
 #[macro_use]
 extern crate serde_derive;
@@ -21,9 +21,9 @@ use structopt::StructOpt;
 // use std::io::{self};
 // use structopt::StructOpt;
 // macro to create vector of strings
-// macro_rules! vec_of_strings {
-//     ($($x:expr),*) => (vec![$($x.to_string()),*]);
-// }
+macro_rules! vec_of_strings {
+    ($($x:expr),*) => (vec![$($x.to_string()),*]);
+}
 // }}}
 // structs and enums {{{
 #[derive(Envconfig)]
@@ -85,7 +85,7 @@ fn main() {
         // check arg0 matches files found in directory
         let target = items
             .into_iter()
-            .filter(|i| i.to_string() == arg0)
+            .filter(|i| i == &arg0)
             .collect::<Vec<_>>();
         // error handling whether match was found
         let isfound = match target.get(0) {
@@ -100,10 +100,10 @@ fn main() {
     // check subcommands
     match opt.sub {
         Some(Sub::Push { repo }) => {
-            // if let Err(err) = audit(ips) {
-            //     println!("{}", err);
-            //     process::exit(1);
-            // }
+            if let Err(err) = push(&config.home, &repo) {
+                println!("{}", err);
+                process::exit(1);
+            }
         }
         _ => (),
     }
@@ -137,6 +137,21 @@ fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
     let cmd = format!("{} {}", editor, location);
     println!("{:?}", &cmd);
     let args = &["-c", &cmd];
+    duct::cmd("bash", args).run()?;
+    Ok(())
+}
+// }}}
+// openFile {{{
+fn push(home: &str, dir: &str) -> Result<(), Error> {
+    let location = format!("{}/m/{}", home, dir);
+    let cmd = vec_of_strings![
+        format!("cd {}", location),
+        "git add -A",
+        "git commit -m 'test'",
+        "git push"
+    ];
+    println!("{:?}", &cmd);
+    let args = &["-c", &cmd.join(";")];
     duct::cmd("bash", args).run()?;
     Ok(())
 }
