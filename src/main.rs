@@ -160,8 +160,6 @@ fn push(home: &str, dir: &str) -> Result<(), Error> {
         format!("git commit -m '{}'", utc),
         "git push"
     ];
-    // Error handling: if target.get(0) exists, store in isfound else store arg0
-    // let cmds = [&setup[..], &lan[..], &sudo[..], &interact[..]].concat();
     let cmd = match dir.as_ref() {
         "dot" => [&cd[..], &copy[..], &push[..]].concat(),
         _ => [&cd[..], &push[..]].concat(),
