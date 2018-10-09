@@ -11,7 +11,7 @@ extern crate structopt;
 extern crate serde_derive;
 extern crate chrono;
 extern crate csv;
-// use chrono::prelude::*;
+use chrono::prelude::*;
 use envconfig::Envconfig;
 use failure::Error;
 // use glob::glob;
@@ -87,7 +87,7 @@ fn main() {
             .into_iter()
             .filter(|i| i == &arg0)
             .collect::<Vec<_>>();
-        // error handling whether match was found
+        // Error handling: if target.get(0) exists, store in isfound else store arg0
         let isfound = match target.get(0) {
             Some(i) => i,
             None => &arg0,
@@ -143,14 +143,29 @@ fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
 // }}}
 // openFile {{{
 fn push(home: &str, dir: &str) -> Result<(), Error> {
+    let utc: DateTime<Utc> = Utc::now();
     let location = format!("{}/m/{}", home, dir);
-    let cmd = vec_of_strings![
-        format!("cd {}", location),
+    let cd = vec_of_strings![
+        format!("cd {}", location)
+    ];
+    let copy = vec_of_strings![
+        format!("cp {}/.config/alacritty/alacritty.yml {}/m/dot/", home, home),
+        format!("cp {}/.config/nvim/init.vim {}/m/dot/", home, home),
+        format!("cp {}/.config/ion/initrc {}/m/dot/", home, home),
+        format!("cp {}/.tmux.conf.local {}/m/dot/", home, home)
+    ];
+    let push = vec_of_strings![
         "sed -i 's/https:\\/\\/github.com\\//git@github.com:/' .git/config",
         "git add -A",
-        "git commit -m 'test'",
+        format!("git commit -m '{}'", utc),
         "git push"
     ];
+    // Error handling: if target.get(0) exists, store in isfound else store arg0
+    // let cmds = [&setup[..], &lan[..], &sudo[..], &interact[..]].concat();
+    let cmd = match dir.as_ref() {
+        "dot" => [&cd[..], &copy[..], &push[..]].concat(),
+        _ => [&cd[..], &push[..]].concat(),
+    };
     println!("{:?}", &cmd);
     let args = &["-c", &cmd.join(";")];
     duct::cmd("bash", args).run()?;
