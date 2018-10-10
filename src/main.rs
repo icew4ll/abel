@@ -98,14 +98,11 @@ fn main() {
         }
     }
     // check subcommands
-    match opt.sub {
-        Some(Sub::Push { repo }) => {
-            if let Err(err) = push(&config.home, &repo) {
-                println!("{}", err);
-                process::exit(1);
-            }
+    if let Some(Sub::Push { repo }) = opt.sub {
+        if let Err(err) = push(&config.home, &repo) {
+            println!("{}", err);
+            process::exit(1);
         }
-        _ => (),
     }
 }
 // }}}
@@ -133,7 +130,7 @@ fn paths(home: &str, files: &mut Vec<String>) -> Result<(), Error> {
 // }}}
 // openFile {{{
 fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
-    let location = format!("{}{}/{}", home, "/m/vim", file);
+    let location = format!("{}/m/vim/{}", home, file);
     let cmd = format!("{} {}", editor, location);
     println!("{:?}", &cmd);
     let args = &["-c", &cmd];
