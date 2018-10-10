@@ -137,7 +137,7 @@ fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
     Ok(())
 }
 // }}}
-// openFile {{{
+// Github Push {{{
 fn push(home: &str, dir: &str) -> Result<(), Error> {
     let utc: DateTime<Utc> = Utc::now();
     let location = format!("{}/m/{}", home, dir);
