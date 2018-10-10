@@ -26,6 +26,7 @@ macro_rules! vec_of_strings {
 }
 // }}}
 // structs and enums {{{
+// environment variables
 #[derive(Envconfig)]
 struct Config {
     #[envconfig(from = "HOME")]
@@ -33,6 +34,7 @@ struct Config {
     #[envconfig(from = "EDITOR")]
     editor: String,
 }
+// csv columns
 #[derive(Debug, Deserialize)]
 struct Csv {
     alias: String,
@@ -55,7 +57,7 @@ enum Sub {
 // }}}
 // main {{{
 fn main() {
-    // Setup data
+    // Setup data storage
     let opt = Opt::from_args();
     let mut csv = vec![];
     let mut files = vec![];
@@ -80,13 +82,10 @@ fn main() {
         .iter()
         .map(|x| x.replace(&replacestring, ""))
         .collect::<Vec<_>>();
-    // check for arg0
+    // check if argument index 0 exists
     if let Some(arg0) = opt.file {
         // check arg0 matches files found in directory
-        let target = items
-            .into_iter()
-            .filter(|i| i == &arg0)
-            .collect::<Vec<_>>();
+        let target = items.into_iter().filter(|i| i == &arg0).collect::<Vec<_>>();
         // Error handling: if target.get(0) exists, store in isfound else store arg0
         let isfound = match target.get(0) {
             Some(i) => i,
@@ -97,7 +96,7 @@ fn main() {
             process::exit(1);
         }
     }
-    // check subcommands
+    // check if subcommands exists
     if let Some(Sub::Push { repo }) = opt.sub {
         if let Err(err) = push(&config.home, &repo) {
             println!("{}", err);
@@ -142,11 +141,12 @@ fn openfile(home: &str, editor: &str, file: &str) -> Result<(), Error> {
 fn push(home: &str, dir: &str) -> Result<(), Error> {
     let utc: DateTime<Utc> = Utc::now();
     let location = format!("{}/m/{}", home, dir);
-    let cd = vec_of_strings![
-        format!("cd {}", location)
-    ];
+    let cd = vec_of_strings![format!("cd {}", location)];
     let copy = vec_of_strings![
-        format!("cp {}/.config/alacritty/alacritty.yml {}/m/dot/", home, home),
+        format!(
+            "cp {}/.config/alacritty/alacritty.yml {}/m/dot/",
+            home, home
+        ),
         format!("cp {}/.config/nvim/init.vim {}/m/dot/", home, home),
         format!("cp {}/.config/ion/initrc {}/m/dot/", home, home),
         format!("cp {}/.tmux.conf.local {}/m/dot/", home, home)
@@ -157,7 +157,7 @@ fn push(home: &str, dir: &str) -> Result<(), Error> {
         format!("git commit -m '{}'", utc),
         "git push"
     ];
-    let cmd = match dir.as_ref() {
+    let cmd = match dir {
         "dot" => [&cd[..], &copy[..], &push[..]].concat(),
         _ => [&cd[..], &push[..]].concat(),
     };
